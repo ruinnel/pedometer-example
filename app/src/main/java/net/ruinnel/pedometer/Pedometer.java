@@ -32,6 +32,9 @@ public class Pedometer extends Application {
     // activity
     void inject(BaseActivity baseActivity);
     void inject(MainActivity mainActivity);
+
+    // service
+    void inject(PedometerService pedometerService);
   }
 
   private ApplicationComponent component;

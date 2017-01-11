@@ -11,20 +11,32 @@ package net.ruinnel.pedometer.view;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
+import android.view.View;
+import android.widget.TextView;
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -34,11 +46,15 @@ import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import net.ruinnel.pedometer.BuildConfig;
 import net.ruinnel.pedometer.NetModule;
+import net.ruinnel.pedometer.Pedometer;
+import net.ruinnel.pedometer.PedometerService;
 import net.ruinnel.pedometer.R;
+import net.ruinnel.pedometer.Settings;
 import net.ruinnel.pedometer.api.NaverMapClient;
 import net.ruinnel.pedometer.api.bean.Error;
 import net.ruinnel.pedometer.api.bean.ReverseGeocode;
 import net.ruinnel.pedometer.util.Log;
+import net.ruinnel.pedometer.util.Utils;
 import net.ruinnel.pedometer.view.widget.BaseActivity;
 import okhttp3.Request;
 import okio.Buffer;
@@ -62,6 +78,9 @@ public class MainActivity extends BaseActivity
   public static final int DISPLACEMENT = 100;              // 100m
   public static final int USER_PERMISSION_REQUEST = 9876;
 
+  private static final int MSG_LOCATION_TIMEOUT = 1;
+  private static final int LOCATION_TIMEOUT = 10 * 1000; // 10 sec
+
   @Inject
   NaverMapClient mAppClient;
 
@@ -71,10 +90,30 @@ public class MainActivity extends BaseActivity
   @Inject
   Gson mGson;
 
+  @BindView(R.id.txt_main)
+  TextView mTxtView;
+
   private GoogleApiClient mGoogleApiClient;
   private boolean mIsApiConnected;
 
   private Location mLastLocation;
+
+  private boolean mIsPedometerServiceBounding;
+  private ServiceConnection mPedometerServiceConnection;
+  private PedometerService mPedometerService;
+
+  private Handler mHandler;
+
+  private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      String action = intent.getAction();
+      if (Settings.ACTION_STEP.equals(action)) {
+        int todaySteps = mSettings.getTodaySteps();
+        mTxtView.setText(String.format("Steps : %d", todaySteps));
+      }
+    }
+  };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -86,14 +125,34 @@ public class MainActivity extends BaseActivity
     if (BuildConfig.DEBUG) {
       mApp.setRequestModifiedListener(this);
     }
+
+    mIsPedometerServiceBounding = false;
+    startPedometerService();
+  }
+
+  @Override
+  protected void onStart() {
+    super.onStart();
+    if (checkPlayServices() && checkPermission()) {
+      connectGoogleApiClient();
+    }
+  }
+
+  @Override
+  protected void onStop() {
+    super.onStop();
+    if (mGoogleApiClient != null) {
+      stopLocationUpdates();
+      mGoogleApiClient.disconnect();
+    }
   }
 
   @Override
   protected void onResume() {
     super.onResume();
-    if (checkPlayServices() && checkPermission()) {
-      connectGoogleApiClient();
-    }
+
+    IntentFilter filter = new IntentFilter(Settings.ACTION_STEP);
+    LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, filter);
 
     // TODO test.
     //requestReverseGeocode(37.551633, 127.128662);
@@ -102,11 +161,42 @@ public class MainActivity extends BaseActivity
   @Override
   protected void onPause() {
     super.onPause();
-    if (mGoogleApiClient != null) {
-      stopLocationUpdates();
-      mGoogleApiClient.disconnect();
+    try {
+      LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+    } catch (Exception e) {
+
     }
   }
+
+  public void startPedometerService() {
+    if (mIsPedometerServiceBounding) {
+      return;
+    }
+
+    mPedometerServiceConnection = new ServiceConnection() {
+      public void onServiceConnected(ComponentName className, IBinder service) {
+        mPedometerService = ((PedometerService.PedometerServiceBinder) service).getService();
+      }
+
+      public void onServiceDisconnected(ComponentName className) {}
+    };
+
+    if (!Utils.isServiceRunning(getApplicationContext(), PedometerService.class)) {
+      startService(new Intent(this, PedometerService.class));
+    }
+
+    mIsPedometerServiceBounding = true;
+    bindService(new Intent(this, Pedometer.class), mPedometerServiceConnection, Context.BIND_AUTO_CREATE);
+  }
+
+  public void stopPedometerService() {
+    if (mIsPedometerServiceBounding && mPedometerServiceConnection != null) {
+      mIsPedometerServiceBounding = false;
+      unbindService(mPedometerServiceConnection);
+      //stopService(mIntent);
+    }
+  }
+
 
   public boolean checkPermission() {
     boolean permitted = false;
@@ -255,10 +345,25 @@ public class MainActivity extends BaseActivity
       Log.i(TAG, "Couldn't get the location. Make sure location is enabled on the device.");
     } else {
       Log.i(TAG, "LastLocation " + mLastLocation.getLatitude() + ", " + mLastLocation.getLongitude() + " (" + mLastLocation.getProvider() + ")");
-      requestReverseGeocode(mLastLocation.getLatitude(), mLastLocation.getLongitude());
     }
 
     startLocationUpdates();
+    // current location timeout...
+    mHandler = new Handler(new Handler.Callback() {
+      @Override
+      public boolean handleMessage(Message message) {
+        if (message.what == MSG_LOCATION_TIMEOUT) {
+          if (mLastLocation != null) {
+            requestReverseGeocode(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+          } else {
+            // TODO
+            showSnackbar(R.string.location_not_found);
+          }
+        }
+        return false;
+      }
+    });
+    mHandler.sendEmptyMessageDelayed(MSG_LOCATION_TIMEOUT, LOCATION_TIMEOUT);
   }
 
   @Override
@@ -322,12 +427,18 @@ public class MainActivity extends BaseActivity
 
   private void startInstalledAppDetailsActivity() {
     final Intent intent = new Intent();
-    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+    intent.setAction(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
     intent.addCategory(Intent.CATEGORY_DEFAULT);
     intent.setData(Uri.parse("package:" + getApplicationContext().getPackageName()));
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
     intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
     this.startActivity(intent);
+  }
+
+  @OnClick(R.id.btn_reset)
+  public void onReset(View view) {
+    mSettings.setTodaySteps(0);
+    mTxtView.setText(String.format("Steps : %d", 0));
   }
 }

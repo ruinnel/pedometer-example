@@ -22,6 +22,12 @@ public class Settings {
   public static final String CLIENT_ID = "7ZBRhuQ6ufaL7ZjNDP8Q";
   public static final String CLIENT_SECRET = "JDt6XV4OHR";
 
+  public static final String ACTION_STEP = "net.ruinnel.pedometer.ACTION_STEP";
+
+  // keys
+  private static final String KEY_TODAY_STEPS = "today_steps";
+  private static final String KEY_PAUSE_STEPS = "pause_steps";
+
   private final Context mContext;
   private static Settings mInstance;
   private final SharedPreferences mPref;
@@ -84,5 +90,25 @@ public class Settings {
   private Settings(Context context) {
     mContext = context;
     mPref = PreferenceManager.getDefaultSharedPreferences(context);
+  }
+
+  public void setTodaySteps(int steps) {
+    SharedPreferences.Editor editor = mPref.edit();
+    editor.putInt(KEY_TODAY_STEPS, steps);
+    editor.commit();
+  }
+
+  public int getTodaySteps() {
+    return mPref.getInt(KEY_TODAY_STEPS, 0);
+  }
+
+  public void setPauseSteps(int steps) {
+    SharedPreferences.Editor editor = mPref.edit();
+    editor.putInt(KEY_PAUSE_STEPS, steps);
+    editor.commit();
+  }
+
+  public int getPauseSteps() {
+    return mPref.getInt(KEY_PAUSE_STEPS, 0);
   }
 }
