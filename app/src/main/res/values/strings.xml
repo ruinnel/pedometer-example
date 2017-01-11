@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Pedometer</string>
+  <string name="close">"닫기"</string>
+</resources>
