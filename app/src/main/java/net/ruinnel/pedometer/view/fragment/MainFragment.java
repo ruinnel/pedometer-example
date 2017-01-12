@@ -46,6 +46,7 @@ import retrofit2.Response;
 import javax.inject.Inject;
 import java.lang.reflect.Type;
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 /**
@@ -103,18 +104,21 @@ public class MainFragment extends BaseFragment {
     refreshViews();
 
     //TODO 테스트 데이터 생성 - 하루전 부터. 100일치 데이터 생성
-    makeTestData();
+    //makeTestData();
 
     return mView;
   }
 
   // TODO 나중에 지울것
   private void makeTestData() {
+    SimpleDateFormat formater = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS");
     Calendar cal = Calendar.getInstance();
     cal.setTime(Utils.getToday());
     SecureRandom random = new SecureRandom();
+    Log.d(TAG, "today - " + formater.format(cal.getTime()));
     for (int i = 0; i < 100; i++) {
-      cal.set(Calendar.DAY_OF_MONTH, -1);
+      cal.add(Calendar.DAY_OF_MONTH, -1);
+      Log.d(TAG, "day = " + formater.format(cal.getTime()));
       int steps = Math.abs(random.nextInt() % 10000);
       History history = new History();
       history.day = cal.getTime();

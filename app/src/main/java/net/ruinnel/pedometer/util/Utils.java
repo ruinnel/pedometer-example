@@ -36,7 +36,6 @@ public class Utils {
   public static Date getDay(Date date) {
     Calendar cal = Calendar.getInstance();
     cal.setTime(date);
-    cal.setTimeInMillis(System.currentTimeMillis());
     cal.set(Calendar.HOUR_OF_DAY, 0);
     cal.set(Calendar.MINUTE, 0);
     cal.set(Calendar.SECOND, 0);

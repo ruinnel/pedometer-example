@@ -65,7 +65,7 @@ public class DatabaseManager {
     String orderBy = TableDef.History.COL_DAY + " desc";
     String limit = null;
     if (offset != null && count != null) {
-      limit = "";
+      limit = String.format("%d, %d", offset, count);
     }
     Cursor cursor = this.query(TableDef.History.NAME, selection, selectionArgs, orderBy, limit);
     while (cursor.moveToNext()) {

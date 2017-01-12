@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import net.ruinnel.pedometer.R;
 import net.ruinnel.pedometer.db.bean.History;
-import net.ruinnel.pedometer.util.Log;
 import net.ruinnel.pedometer.util.Utils;
 
 import java.text.SimpleDateFormat;
@@ -54,7 +53,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
     holder.txtDay.setText(mFormater.format(item.day));
     holder.txtSteps.setText(String.valueOf(item.steps));
     double distance = Utils.getDistance(item.steps, mStrides);
-    Log.d(TAG, "steps = " + item.steps + ", strides = " + mStrides + ", distance = " + distance);
     holder.txtDistance.setText(String.format(mContext.getString(R.string.format_distance), distance));
   }
 
@@ -71,7 +69,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
     ViewHolder(View itemView) {
       super(itemView);
 
-      //background = itemView.getBackground();
       txtDay = (TextView) itemView.findViewById(R.id.txt_day);
       txtSteps = (TextView) itemView.findViewById(R.id.txt_steps);
       txtDistance = (TextView) itemView.findViewById(R.id.txt_distance);

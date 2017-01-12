@@ -400,10 +400,12 @@ public class MainActivity extends BaseActivity
   @OnClick(R.id.tab_main)
   public void onClickMainTab(View view) {
     mPager.setCurrentItem(IDX_MAIN);
+    refreshTab(IDX_MAIN);
   }
 
   @OnClick(R.id.tab_history)
   public void onClickHistoryTab(View view) {
     mPager.setCurrentItem(IDX_HISTORY);
+    refreshTab(IDX_HISTORY);
   }
 }

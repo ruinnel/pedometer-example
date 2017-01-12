@@ -22,4 +22,5 @@
   <!--<string name="google_play_service_not_found">"Google Play 서비스를 이용할 수 없습니다."</string>-->
   <string name="google_play_service_not_found">"현재 위치를 확인 할 수 없습니다."</string>
   <string name="location_not_found">"현재 위치를 확인 할 수 없습니다."</string>
+  <string name="reach_list_last_data">"더 이상 불러올 데이터가 없습니다."</string>
 </resources>

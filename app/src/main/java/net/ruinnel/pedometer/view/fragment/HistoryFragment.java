@@ -13,7 +13,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -42,7 +41,8 @@ import java.util.List;
 public class HistoryFragment extends BaseFragment {
   private static final String TAG = HistoryFragment.class.getSimpleName();
 
-  private static final int LOAD_ONCE = 10;
+  private static final int LOAD_ONCE = 20;
+
   @Inject
   Settings mSettings;
 
@@ -54,7 +54,10 @@ public class HistoryFragment extends BaseFragment {
 
   private List<History> mHistories;
   private HistoryAdapter mAdapter;
+  private LinearLayoutManager mLayoutManager;
 
+  // for indicate recycler view scroll..
+  private boolean mNowLoading;
   private int mOffset;
 
   private BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -72,6 +75,24 @@ public class HistoryFragment extends BaseFragment {
     }
   };
 
+  private void loadNext() {
+    List<History> temp = mDbManager.getHistories(mOffset, LOAD_ONCE);
+    if (temp != null && !temp.isEmpty()) {
+      mOffset = mOffset + LOAD_ONCE;
+      mHistories.addAll(temp);
+      mRecyclerView.post(new Runnable() {
+        @Override
+        public void run() {
+          mAdapter.notifyDataSetChanged();
+        }
+      });
+      mNowLoading = false;
+    } else {
+      showSnackbar(R.string.reach_list_last_data);
+    }
+
+  }
+
   @Nullable
   @Override
   public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -84,11 +105,37 @@ public class HistoryFragment extends BaseFragment {
     mApp.component().inject(this);
     ButterKnife.bind(this, mView);
 
-    mHistories = mDbManager.getHistories(mOffset, LOAD_ONCE);
+    mNowLoading = false;
+    mOffset = 0;
+    mHistories = Lists.newArrayList();
+    mLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
     mAdapter = new HistoryAdapter(getContext(), mHistories, mSettings.getStrides());
     mRecyclerView.setAdapter(mAdapter);
-    mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL,false));
+    mRecyclerView.setLayoutManager(mLayoutManager);
     mRecyclerView.setAnimation(null);
+    mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+      @Override
+      public void onScrollStateChanged(RecyclerView recyclerView, int newState) {}
+
+      @Override
+      public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+        if (dy > 0) { //check for scroll down
+          int visibleItemCount = mLayoutManager.getChildCount();
+          int totalItemCount = mLayoutManager.getItemCount();
+          int pastVisiblesItems = mLayoutManager.findFirstVisibleItemPosition();
+
+          if (!mNowLoading) {
+            if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+              Log.v(TAG, "reach last item!");
+              mNowLoading = true;
+              loadNext();
+            }
+          }
+        }
+      }
+    });
+
+    loadNext();
 
     return mView;
   }

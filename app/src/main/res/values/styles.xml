@@ -12,6 +12,7 @@
     <item name="android:background">@drawable/bg_tab</item>
     <item name="android:textColor">@drawable/text_tab</item>
     <item name="android:gravity">center</item>
+    <item name="android:textStyle">bold</item>
   </style>
 
   <style name="button">
