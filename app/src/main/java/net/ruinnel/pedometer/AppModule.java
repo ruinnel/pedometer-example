@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dagger.Module;
 import dagger.Provides;
+import net.ruinnel.pedometer.db.DatabaseManager;
 
 import javax.inject.Singleton;
 
@@ -68,5 +69,11 @@ public class AppModule {
   @Singleton
   SensorManager provideSensorManager() {
     return (SensorManager) application.getSystemService(Context.SENSOR_SERVICE);
+  }
+
+  @Provides
+  @Singleton
+  DatabaseManager provideDatabaseManager() {
+    return new DatabaseManager(application);
   }
 }

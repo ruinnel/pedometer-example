@@ -6,6 +6,9 @@
   <string name="confirm">"확인"</string>
   <string name="cancel">"취소"</string>
 
+  <string name="start">"START"</string>
+  <string name="stop">"STOP"</string>
+
   <string name="msg_network_error">"네트워크 연결 중 문제가 발생하였습니다.\n잠시후 다시 시도해 주세요."</string>
   <string name="need_location_permission">"위치 정보 권한이 필요합니다."</string>
   <!--<string name="google_play_service_not_found">"Google Play 서비스를 이용할 수 없습니다."</string>-->

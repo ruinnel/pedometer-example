@@ -33,6 +33,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,13 +47,14 @@ import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import net.ruinnel.pedometer.BuildConfig;
 import net.ruinnel.pedometer.NetModule;
-import net.ruinnel.pedometer.Pedometer;
 import net.ruinnel.pedometer.PedometerService;
 import net.ruinnel.pedometer.R;
 import net.ruinnel.pedometer.Settings;
 import net.ruinnel.pedometer.api.NaverMapClient;
 import net.ruinnel.pedometer.api.bean.Error;
 import net.ruinnel.pedometer.api.bean.ReverseGeocode;
+import net.ruinnel.pedometer.db.DatabaseManager;
+import net.ruinnel.pedometer.db.bean.History;
 import net.ruinnel.pedometer.util.Log;
 import net.ruinnel.pedometer.util.Utils;
 import net.ruinnel.pedometer.view.widget.BaseActivity;
@@ -90,8 +92,14 @@ public class MainActivity extends BaseActivity
   @Inject
   Gson mGson;
 
+  @Inject
+  DatabaseManager mDbManager;
+
   @BindView(R.id.txt_main)
   TextView mTxtView;
+
+  @BindView(R.id.btn_toggle)
+  Button mBtnToggle;
 
   private GoogleApiClient mGoogleApiClient;
   private boolean mIsApiConnected;
@@ -99,6 +107,7 @@ public class MainActivity extends BaseActivity
   private Location mLastLocation;
 
   private boolean mIsPedometerServiceBounding;
+  private Intent mServiceIntent;
   private ServiceConnection mPedometerServiceConnection;
   private PedometerService mPedometerService;
 
@@ -109,7 +118,8 @@ public class MainActivity extends BaseActivity
     public void onReceive(Context context, Intent intent) {
       String action = intent.getAction();
       if (Settings.ACTION_STEP.equals(action)) {
-        int todaySteps = mSettings.getTodaySteps();
+        History history = mDbManager.todayHistory();
+        int todaySteps = (history != null ? history.steps : 0);
         mTxtView.setText(String.format("Steps : %d", todaySteps));
       }
     }
@@ -128,6 +138,8 @@ public class MainActivity extends BaseActivity
 
     mIsPedometerServiceBounding = false;
     startPedometerService();
+
+    refreshButton();
   }
 
   @Override
@@ -153,9 +165,6 @@ public class MainActivity extends BaseActivity
 
     IntentFilter filter = new IntentFilter(Settings.ACTION_STEP);
     LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, filter);
-
-    // TODO test.
-    //requestReverseGeocode(37.551633, 127.128662);
   }
 
   @Override
@@ -165,6 +174,14 @@ public class MainActivity extends BaseActivity
       LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
     } catch (Exception e) {
 
+    }
+  }
+
+  private void refreshButton() {
+    if (mSettings.isStarted()) {
+      mBtnToggle.setText(R.string.stop);
+    } else {
+      mBtnToggle.setText(R.string.start);
     }
   }
 
@@ -181,19 +198,20 @@ public class MainActivity extends BaseActivity
       public void onServiceDisconnected(ComponentName className) {}
     };
 
+    mServiceIntent = new Intent(this, PedometerService.class);
     if (!Utils.isServiceRunning(getApplicationContext(), PedometerService.class)) {
-      startService(new Intent(this, PedometerService.class));
+      startService(mServiceIntent);
     }
 
     mIsPedometerServiceBounding = true;
-    bindService(new Intent(this, Pedometer.class), mPedometerServiceConnection, Context.BIND_AUTO_CREATE);
+    bindService(mServiceIntent, mPedometerServiceConnection, Context.BIND_AUTO_CREATE);
   }
 
   public void stopPedometerService() {
     if (mIsPedometerServiceBounding && mPedometerServiceConnection != null) {
       mIsPedometerServiceBounding = false;
       unbindService(mPedometerServiceConnection);
-      //stopService(mIntent);
+      stopService(mServiceIntent);
     }
   }
 
@@ -436,9 +454,16 @@ public class MainActivity extends BaseActivity
     this.startActivity(intent);
   }
 
-  @OnClick(R.id.btn_reset)
-  public void onReset(View view) {
-    mSettings.setTodaySteps(0);
-    mTxtView.setText(String.format("Steps : %d", 0));
+  @OnClick(R.id.btn_toggle)
+  public void onToggle(View view) {
+    if (mPedometerService != null) {
+      if (!mSettings.isStarted()) {
+        mPedometerService.startPedometer();
+      } else {
+        mPedometerService.stopPedometer();
+      }
+    }
+
+    refreshButton();
   }
 }

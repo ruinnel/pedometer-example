@@ -12,6 +12,9 @@ package net.ruinnel.pedometer.util;
 import android.app.ActivityManager;
 import android.content.Context;
 
+import java.util.Calendar;
+import java.util.Date;
+
 /**
  * Created by ruinnel on 2017. 1. 11..
  */
@@ -24,5 +27,20 @@ public class Utils {
       }
     }
     return false;
+  }
+
+  public static Date getToday() {
+    return getDay(new Date());
+  }
+
+  public static Date getDay(Date date) {
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(date);
+    cal.setTimeInMillis(System.currentTimeMillis());
+    cal.set(Calendar.HOUR_OF_DAY, 0);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);
+    cal.set(Calendar.MILLISECOND, 0);
+    return cal.getTime();
   }
 }

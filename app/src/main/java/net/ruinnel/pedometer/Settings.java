@@ -25,7 +25,7 @@ public class Settings {
   public static final String ACTION_STEP = "net.ruinnel.pedometer.ACTION_STEP";
 
   // keys
-  private static final String KEY_TODAY_STEPS = "today_steps";
+  private static final String KEY_IS_STARTED = "is_started";
   private static final String KEY_PAUSE_STEPS = "pause_steps";
 
   private final Context mContext;
@@ -92,14 +92,14 @@ public class Settings {
     mPref = PreferenceManager.getDefaultSharedPreferences(context);
   }
 
-  public void setTodaySteps(int steps) {
+  public void setStarted(boolean started) {
     SharedPreferences.Editor editor = mPref.edit();
-    editor.putInt(KEY_TODAY_STEPS, steps);
+    editor.putBoolean(KEY_IS_STARTED, started);
     editor.commit();
   }
 
-  public int getTodaySteps() {
-    return mPref.getInt(KEY_TODAY_STEPS, 0);
+  public boolean isStarted() {
+    return mPref.getBoolean(KEY_IS_STARTED, false);
   }
 
   public void setPauseSteps(int steps) {

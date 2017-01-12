@@ -27,6 +27,7 @@
     </activity>
 
     <service android:name=".PedometerService"/>
+    <provider android:authorities="net.ruinnel.pedometer" android:name=".provider.PedometerProvider" />
   </application>
 
 </manifest>

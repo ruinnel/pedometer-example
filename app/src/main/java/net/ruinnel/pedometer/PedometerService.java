@@ -17,9 +17,12 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import net.ruinnel.pedometer.db.DatabaseManager;
+import net.ruinnel.pedometer.db.bean.History;
 import net.ruinnel.pedometer.util.Log;
 import net.ruinnel.pedometer.util.StepDetector;
 import net.ruinnel.pedometer.util.StepListener;
+import net.ruinnel.pedometer.util.Utils;
 
 import javax.inject.Inject;
 
@@ -48,6 +51,9 @@ public class PedometerService extends Service implements StepListener {
   @Inject
   SensorManager mSensorManager;
 
+  @Inject
+  DatabaseManager mDbManager;
+
   private StepDetector mStepDetector;
   private boolean mIsRegistered;
 
@@ -65,7 +71,11 @@ public class PedometerService extends Service implements StepListener {
     Log.i(TAG, "onStartCommand called!");
     mStepDetector = new StepDetector();
     mStepDetector.addStepListener(this);
-    reRegisterSensorListener();
+    // 종료 후
+    Log.i(TAG, "isStarted = " + mSettings.isStarted());
+    if (mSettings.isStarted()) {
+      reRegisterSensorListener();
+    }
     return START_STICKY;
   }
 
@@ -79,6 +89,16 @@ public class PedometerService extends Service implements StepListener {
   @Override
   public IBinder onBind(Intent intent) {
     return mBinder;
+  }
+
+  public void startPedometer() {
+    mSettings.setStarted(true);
+    reRegisterSensorListener();
+  }
+
+  public void stopPedometer() {
+    mSettings.setStarted(false);
+    unregisterSensorListener();
   }
 
   private void reRegisterSensorListener() {
@@ -117,8 +137,16 @@ public class PedometerService extends Service implements StepListener {
     LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
 
     Log.i(TAG, "onStep - 1");
-    int todaySteps = mSettings.getTodaySteps();
-    mSettings.setTodaySteps(++todaySteps);
+    History history = mDbManager.todayHistory();
+    if (history == null) {
+      history = new History();
+      history.day = Utils.getToday();
+      history.steps = 1;
+      mDbManager.saveHistory(history);
+    } else {
+      history.steps = history.steps + 1;
+      mDbManager.updateHistory(history);
+    }
   }
 
   @Override
@@ -133,17 +161,23 @@ public class PedometerService extends Service implements StepListener {
 
     int diff = steps - pauseSteps;
     if (diff > 0) {
-      int todayTotal = mSettings.getTodaySteps();
+      History history = mDbManager.todayHistory();
+      if (history == null) {
+        history = new History();
+        history.day = Utils.getToday();
+        history.steps = diff;
+        mDbManager.saveHistory(history);
+      } else {
+        history.steps = history.steps + diff;
+        mDbManager.updateHistory(history);
+      }
 
-      Log.d(TAG, "paused = " + pauseSteps + ", today = " + todayTotal + ", diff = " + diff);
-      todayTotal = todayTotal + diff;
-      mSettings.setTodaySteps(todayTotal);
+      Log.d(TAG, "paused = " + pauseSteps + ", today = " + history.steps + ", diff = " + diff);
+
       mSettings.setPauseSteps(steps);
     }
 
     Intent broadcast = new Intent(Settings.ACTION_STEP);
     LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
-
-    //reRegisterSensorListener();
   }
 }
