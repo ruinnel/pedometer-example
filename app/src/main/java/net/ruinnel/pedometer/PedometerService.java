@@ -102,7 +102,7 @@ public class PedometerService extends Service implements StepListener {
 
   private void reRegisterSensorListener() {
     Log.d(TAG, "re-register sensor listener");
-    if (false && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) { // over KITKAT_WATCH(20)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) { // over KITKAT_WATCH(20)
       Sensor stepCounter = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
       if (stepCounter != null) {
         Log.i(TAG, "using TYPE_STEP_COUNTER");
