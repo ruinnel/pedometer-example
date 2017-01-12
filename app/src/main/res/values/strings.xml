@@ -5,9 +5,16 @@
   <string name="notification">"알림"</string>
   <string name="confirm">"확인"</string>
   <string name="cancel">"취소"</string>
+  <string name="no_use">"사용안함"</string>
+  <string name="setting">"설정"</string>
 
   <string name="start">"START"</string>
   <string name="stop">"STOP"</string>
+
+  <string name="menu_strides">"보폭"</string>
+  <string name="format_menu_strides" formatted="false">"보폭(%dm)"</string>
+  <string name="menu_use_overlay">"미니모드"</string>
+  <string name="menu_use_location">"위치정보"</string>
 
   <string name="tab_main">"만보기"</string>
   <string name="tab_history">"만보기 기록"</string>
@@ -19,6 +26,14 @@
 
   <string name="msg_network_error">"네트워크 연결 중 문제가 발생하였습니다.\n잠시후 다시 시도해 주세요."</string>
   <string name="need_location_permission">"위치 정보 권한이 필요합니다."</string>
+  <string name="need_overlay_permission">"팝업 창 표시 권한이 필요합니다."</string>
+  <string name="location_service_disabled">"위치 정보 기능이 비활성화 되었습니다."</string>
+  <string name="location_service_enabled">"위치 정보 기능이 활성화 되었습니다.."</string>
+  <string name="overlay_service_disabled">"팝업 창 표시 기능이 비활성화 되었습니다."</string>
+  <string name="overlay_service_enabled">"팝업 창 표시 기능이 활성화 되었습니다."</string>
+  <string name="please_enable_overlay">"팝업 창 표시 기능을 활성화하면 앱을 닫아도 만보기 정보를 보실 수 있습니다."</string>
+  <string name="please_input_number">"숫자로 입력해 주세요."</string>
+
   <!--<string name="google_play_service_not_found">"Google Play 서비스를 이용할 수 없습니다."</string>-->
   <string name="google_play_service_not_found">"현재 위치를 확인 할 수 없습니다."</string>
   <string name="location_not_found">"현재 위치를 확인 할 수 없습니다."</string>

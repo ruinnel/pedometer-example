@@ -73,16 +73,6 @@ public class BaseActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     mApp = (Pedometer) getApplication();
-
-    if (savedInstanceState != null) {
-      // TODO recover saved data.
-    }
-  }
-
-  @Override
-  protected void onSaveInstanceState(Bundle outState) {
-    super.onSaveInstanceState(outState);
-    // TODO save data
   }
 
   @Override

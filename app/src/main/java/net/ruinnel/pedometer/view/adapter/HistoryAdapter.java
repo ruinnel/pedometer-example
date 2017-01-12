@@ -31,13 +31,17 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
   private final Context mContext;
   private List<History> mHistories;
   private final SimpleDateFormat mFormater;
-  private final int mStrides;
+  private int mStrides;
 
   public HistoryAdapter(Context context, List<History> histories, int strides) {
     mContext = context;
     mStrides = strides;
     mHistories = histories;
     mFormater = new SimpleDateFormat("yyyy.MM.dd");
+  }
+
+  public void setStrides(int strides) {
+    mStrides = strides;
   }
 
   @Override

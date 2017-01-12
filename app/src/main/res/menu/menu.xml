@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Filename	: menu.xml
+  ~ Comment 	:
+  ~ History	: 2017/01/13, ruinnel, Create
+  ~
+  ~ Version	: 1.0
+  ~ Author   : Copyright (c) 2017 by ruinnel. All Rights Reserved.
+  -->
+<menu xmlns:pedometer="http://schemas.android.com/apk/res-auto"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+  <item
+    android:id="@+id/menu_stride"
+    android:title="@string/menu_strides"
+    pedometer:showAsAction="never" />
+  <group android:checkableBehavior="all">
+    <item
+      android:id="@+id/menu_use_overlay"
+      android:title="@string/menu_use_overlay"
+      pedometer:showAsAction="never" />
+    <item
+      android:id="@+id/menu_use_location"
+      android:title="@string/menu_use_location"
+      pedometer:showAsAction="never" />
+  </group>
+</menu>

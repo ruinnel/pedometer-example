@@ -52,18 +52,27 @@ public class Pedometer extends Application {
 
     // service
     void inject(PedometerService pedometerService);
-  }
 
-  private boolean mIsPedometerServiceBounding;
-  private Intent mServiceIntent;
-  private ServiceConnection mPedometerServiceConnection;
-  private PedometerService mPedometerService;
+    void inject(OverlayService overlayService);
+  }
 
   private ApplicationComponent component;
 
   public ApplicationComponent component() {
     return component;
   }
+
+  // for pedometer service
+  private boolean mIsPedometerServiceBounding;
+  private Intent mPedometerServiceIntent;
+  private ServiceConnection mPedometerServiceConnection;
+  private PedometerService mPedometerService;
+
+  // for overlay service
+  private boolean mIsOverlayServiceBounding;
+  private Intent mOverlayServiceIntent;
+  private ServiceConnection mOverlayServiceConnection;
+  private OverlayService mOverlayService;
 
   // Okhttp3의 interceptor로 Request가 변경될 경우 callback.(디버깅용)
   private NetModule.RequestModifiedListener mRequestModifiedListener;
@@ -103,6 +112,7 @@ public class Pedometer extends Application {
     super.onTrimMemory(level);
   }
 
+  // for pedometer service
   public PedometerService pedometerService() {
     return mPedometerService;
   }
@@ -120,20 +130,55 @@ public class Pedometer extends Application {
       public void onServiceDisconnected(ComponentName className) {}
     };
 
-    mServiceIntent = new Intent(this, PedometerService.class);
+    mPedometerServiceIntent = new Intent(this, PedometerService.class);
     if (!Utils.isServiceRunning(getApplicationContext(), PedometerService.class)) {
-      startService(mServiceIntent);
+      startService(mPedometerServiceIntent);
     }
 
     mIsPedometerServiceBounding = true;
-    bindService(mServiceIntent, mPedometerServiceConnection, Context.BIND_AUTO_CREATE);
+    bindService(mPedometerServiceIntent, mPedometerServiceConnection, Context.BIND_AUTO_CREATE);
   }
 
   public void stopPedometerService() {
     if (mIsPedometerServiceBounding && mPedometerServiceConnection != null) {
       mIsPedometerServiceBounding = false;
       unbindService(mPedometerServiceConnection);
-      stopService(mServiceIntent);
+      stopService(mPedometerServiceIntent);
+    }
+  }
+
+  // for overlay service
+  public OverlayService overlayService() {
+    return mOverlayService;
+  }
+
+  public void startOverlayService() {
+    if (mIsOverlayServiceBounding) {
+      return;
+    }
+
+    mOverlayServiceConnection = new ServiceConnection() {
+      public void onServiceConnected(ComponentName className, IBinder service) {
+        mOverlayService = ((OverlayService.OverlayServiceBinder) service).getService();
+      }
+
+      public void onServiceDisconnected(ComponentName className) {}
+    };
+
+    mOverlayServiceIntent = new Intent(this, OverlayService.class);
+    if (!Utils.isServiceRunning(getApplicationContext(), OverlayService.class)) {
+      startService(mOverlayServiceIntent);
+    }
+
+    mIsOverlayServiceBounding = true;
+    bindService(mOverlayServiceIntent, mOverlayServiceConnection, Context.BIND_AUTO_CREATE);
+  }
+
+  public void stopOverlayService() {
+    if (mIsOverlayServiceBounding && mOverlayServiceConnection != null) {
+      mIsOverlayServiceBounding = false;
+      unbindService(mOverlayServiceConnection);
+      stopService(mOverlayServiceIntent);
     }
   }
 }

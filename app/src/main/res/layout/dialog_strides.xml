@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Filename	: dialog_strides.xml
+  ~ Comment 	:
+  ~ History	: 2017/01/13, ruinnel, Create
+  ~
+  ~ Version	: 1.0
+  ~ Author   : Copyright (c) 2017 by ruinnel. All Rights Reserved.
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:paddingLeft="10dp"
+  android:paddingRight="10dp">
+  <EditText
+    android:id="@+id/edit_strides"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:inputType="number"
+    android:maxLines="1"/>
+</LinearLayout>

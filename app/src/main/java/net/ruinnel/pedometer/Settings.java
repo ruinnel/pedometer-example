@@ -24,6 +24,7 @@ public class Settings {
 
   public static final String ACTION_STEP = "net.ruinnel.pedometer.ACTION_STEP";
   public static final String ACTION_FIND_LOCATION = "net.ruinnel.pedometer.ACTION_FIND_LOCATION";
+  public static final String ACTION_STRIDES_CHANGED = "net.ruinnel.pedometer.ACTION_STRIDES_CHANGED";
   public static final String EXTRA_LOCATION = "location";
 
   // 보폭 default(남: 66, 여: 61) -> 중간값 사용
@@ -34,6 +35,8 @@ public class Settings {
   private static final String KEY_PAUSE_STEPS = "pause_steps";
   private static final String KEY_STRIDES = "strides";
   private static final String KEY_IS_STRIDES_SETTED = "is_strides_setted";
+  private static final String KEY_IS_USE_OVERLAY = "is_use_overlay";
+  private static final String KEY_IS_USE_LOCATION = "is_use_location";
 
   private final Context mContext;
   private static Settings mInstance;
@@ -138,5 +141,25 @@ public class Settings {
 
   public boolean isStridesSetted() {
     return mPref.getBoolean(KEY_IS_STRIDES_SETTED, false);
+  }
+
+  public void setUseOverlay(boolean use) {
+    SharedPreferences.Editor editor = mPref.edit();
+    editor.putBoolean(KEY_IS_USE_OVERLAY, use);
+    editor.commit();
+  }
+
+  public boolean isUseOverlay() {
+    return mPref.getBoolean(KEY_IS_USE_OVERLAY, true);
+  }
+
+  public void setUseLocation(boolean use) {
+    SharedPreferences.Editor editor = mPref.edit();
+    editor.putBoolean(KEY_IS_USE_LOCATION, use);
+    editor.commit();
+  }
+
+  public boolean isUseLocation() {
+    return mPref.getBoolean(KEY_IS_USE_LOCATION, true);
   }
 }

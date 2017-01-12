@@ -71,6 +71,9 @@ public class HistoryFragment extends BaseFragment {
           mHistories.get(0).steps = history.steps;
           mAdapter.notifyDataSetChanged();
         }
+      } else if (Settings.ACTION_STRIDES_CHANGED.equals(action)) {
+        mAdapter.setStrides(mSettings.getStrides());
+        mAdapter.notifyDataSetChanged();
       }
     }
   };
@@ -148,7 +151,7 @@ public class HistoryFragment extends BaseFragment {
       return;
     }
 
-    // TODO fragment가 보여질때 실행할 로직.
+    // fragment가 보여질때 실행할 로직.
     registerReceiver();
   }
 
@@ -169,6 +172,7 @@ public class HistoryFragment extends BaseFragment {
   private void registerReceiver() {
     unregisterReceiver();
     IntentFilter filter = new IntentFilter(Settings.ACTION_STEP);
+    filter.addAction(Settings.ACTION_STRIDES_CHANGED);
     LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mReceiver, filter);
   }
 

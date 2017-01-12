@@ -3,9 +3,9 @@
   package="net.ruinnel.pedometer">
 
   <uses-permission android:name="android.permission.INTERNET" />
-
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
   <uses-feature
     android:name="android.hardware.sensor.stepcounter"
@@ -18,7 +18,8 @@
     android:label="@string/app_name"
     android:supportsRtl="true"
     android:theme="@style/AppTheme">
-    <activity android:name=".view.MainActivity">
+    <activity android:name=".view.MainActivity"
+      android:launchMode="singleTask">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
 
@@ -26,6 +27,7 @@
       </intent-filter>
     </activity>
 
+    <service android:name=".OverlayService" android:exported="false" android:enabled="true"/>
     <service android:name=".PedometerService"/>
     <provider android:authorities="net.ruinnel.pedometer" android:name=".provider.PedometerProvider" />
   </application>
