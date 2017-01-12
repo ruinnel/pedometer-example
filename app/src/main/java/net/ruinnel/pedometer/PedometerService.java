@@ -32,8 +32,8 @@ import javax.inject.Inject;
 public class PedometerService extends Service implements StepListener {
   private static final String TAG = PedometerService.class.getSimpleName();
 
-  private static final int STEP_COUNTER_LATENCY = 1 * 60 * 1000 * 1000; // 1 min // microsecond
-//  private static final int STEP_COUNTER_LATENCY = 5 * 1000 * 1000; // 5 sec // microsecond
+  //private static final int STEP_COUNTER_LATENCY = 1 * 60 * 1000 * 1000; // 1 min // microsecond
+  private static final int STEP_COUNTER_LATENCY = 10 * 1000 * 1000; // 10 sec // microsecond
 
   public class PedometerServiceBinder extends Binder {
     public PedometerService getService() {
@@ -59,7 +59,6 @@ public class PedometerService extends Service implements StepListener {
 
   @Override
   public void onCreate() {
-    Log.i(TAG, "onCreate called!");
     super.onCreate();
     mIsRegistered = false;
     mApp = (Pedometer) getApplication();
@@ -68,11 +67,11 @@ public class PedometerService extends Service implements StepListener {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    Log.i(TAG, "onStartCommand called!");
+    Log.v(TAG, "onStartCommand called!");
     mStepDetector = new StepDetector();
     mStepDetector.addStepListener(this);
     // 종료 후
-    Log.i(TAG, "isStarted = " + mSettings.isStarted());
+    Log.v(TAG, "isStarted = " + mSettings.isStarted());
     if (mSettings.isStarted()) {
       reRegisterSensorListener();
     }
@@ -81,7 +80,7 @@ public class PedometerService extends Service implements StepListener {
 
   @Override
   public void onDestroy() {
-    Log.i(TAG, "onDestroy called!");
+    Log.v(TAG, "onDestroy called!");
     super.onDestroy();
     mSensorManager.unregisterListener(mStepDetector);
   }
@@ -103,7 +102,7 @@ public class PedometerService extends Service implements StepListener {
 
   private void reRegisterSensorListener() {
     Log.d(TAG, "re-register sensor listener");
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) { // over KITKAT_WATCH(20)
+    if (false && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) { // over KITKAT_WATCH(20)
       Sensor stepCounter = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
       if (stepCounter != null) {
         Log.i(TAG, "using TYPE_STEP_COUNTER");
@@ -136,7 +135,7 @@ public class PedometerService extends Service implements StepListener {
     Intent broadcast = new Intent(Settings.ACTION_STEP);
     LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
 
-    Log.i(TAG, "onStep - 1");
+    Log.d(TAG, "onStep - 1");
     History history = mDbManager.todayHistory();
     if (history == null) {
       history = new History();
@@ -151,7 +150,7 @@ public class PedometerService extends Service implements StepListener {
 
   @Override
   public void onStepCount(int steps) {
-    Log.i(TAG, "onStepCount = " + steps);
+    Log.d(TAG, "onStepCount = " + steps);
 
     int pauseSteps = mSettings.getPauseSteps();
     if (pauseSteps == 0) { // init

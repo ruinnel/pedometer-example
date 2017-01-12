@@ -404,8 +404,6 @@ public class MainActivity extends BaseActivity
       return;
     }
 
-    Log.i(TAG, "startLocationUpdates");
-
     LocationRequest request = new LocationRequest();
     request.setInterval(INTERVAL);
     request.setFastestInterval(INTERVAL);
@@ -419,7 +417,7 @@ public class MainActivity extends BaseActivity
    * Stopping location updates
    */
   protected void stopLocationUpdates() {
-    Log.i(TAG, "stopLocationUpdates");
+    Log.d(TAG, "stopLocationUpdates");
     LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
   }
 
@@ -432,8 +430,8 @@ public class MainActivity extends BaseActivity
 
   @Override
   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-    Log.i(TAG, "permissions - " + Arrays.toString(permissions));
-    Log.i(TAG, "grantResults - " + Arrays.toString(grantResults));
+    Log.v(TAG, "permissions - " + Arrays.toString(permissions));
+    Log.v(TAG, "grantResults - " + Arrays.toString(grantResults));
     if (permissions != null) {
       for (int i = 0; i < permissions.length; i++) {
         String permission = permissions[i];
