@@ -30,11 +30,13 @@ public class AppModule {
   private static final String JSON_DATE_FORMAT = "yyyy-MM-dd kk:mm:ss";
 
   private final Pedometer application;
+
   public AppModule(Pedometer nexHome) {
     this.application = nexHome;
   }
 
-  @Provides @Singleton
+  @Provides
+  @Singleton
   Context provideApplicationContext() {
     return this.application.getApplicationContext();
   }

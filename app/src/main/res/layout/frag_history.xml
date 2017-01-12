@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Filename	: frag_history.xml
+  ~ Comment 	:
+  ~ History	: 2017/01/12, ruinnel, Create
+  ~
+  ~ Version	: 1.0
+  ~ Author   : Copyright (c) 2017 by ruinnel. All Rights Reserved.
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:paddingTop="16dp"
+  android:paddingLeft="16dp"
+  android:paddingRight="16dp"
+  android:paddingBottom="16dp">
+
+  <android.support.v7.widget.RecyclerView
+    android:id="@+id/recycler_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+</LinearLayout>

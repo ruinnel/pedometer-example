@@ -14,5 +14,6 @@ package net.ruinnel.pedometer.util;
  */
 public interface StepListener {
   void onStep();
+
   void onStepCount(int steps);
 }

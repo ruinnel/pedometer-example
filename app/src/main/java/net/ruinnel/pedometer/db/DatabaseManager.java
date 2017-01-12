@@ -58,15 +58,10 @@ public class DatabaseManager {
     return db.update(table, values, whereClause, whereArgs);
   }
 
-  public List<History> getHistories(Date start, Date end, Integer offset, Integer count) {
+  public List<History> getHistories(Integer offset, Integer count) {
     List<History> histories = Lists.newArrayList();
     String selection = null;
     String[] selectionArgs = null;
-    if (start != null && end != null) {
-      selection = String.format("%s >= ? AND %s <= ? ", TableDef.History.COL_DAY, TableDef.History.COL_DAY);
-      selectionArgs = new String[]{String.valueOf(start.getTime()), String.valueOf(end.getTime())};
-    }
-
     String orderBy = TableDef.History.COL_DAY + " desc";
     String limit = null;
     if (offset != null && count != null) {

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Filename	: bg_btn.xml
+  ~ Comment 	:
+  ~ History	: 2017/01/12, ruinnel, Create
+  ~
+  ~ Version	: 1.0
+  ~ Author   : Copyright (c) 2017 by ruinnel. All Rights Reserved.
+  -->
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:state_checked="false" android:drawable="@drawable/shape_btn" />
+  <item android:state_checked="true" android:drawable="@drawable/shape_btn_o" />
+  <item android:state_enabled="false" android:drawable="@drawable/shape_btn_o" />
+  <item android:state_pressed="false" android:drawable="@drawable/shape_btn" />
+  <item android:drawable="@drawable/shape_btn_o" />
+</selector>

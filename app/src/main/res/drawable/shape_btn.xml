@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?><!--
+  ~ Filename	: shape_btn.xml
+  ~ Comment 	:
+  ~ History	: 2017/01/12, ruinnel, Create
+  ~
+  ~ Version	: 1.0
+  ~ Author   : Copyright (c) 2017 by ruinnel. All Rights Reserved.
+  -->
+
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+  <solid android:color="@color/colorBtnBg" />
+  <stroke
+    android:width="1dp"
+    android:color="@color/colorBtnBg" />
+  <padding
+    android:left="0dp"
+    android:top="0dp"
+    android:right="0dp"
+    android:bottom="0dp" />
+  <corners
+    android:bottomRightRadius="5dp"
+    android:bottomLeftRadius="5dp"
+    android:topLeftRadius="5dp"
+    android:topRightRadius="5dp" />
+</shape>

@@ -11,13 +11,8 @@ package net.ruinnel.pedometer.view;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.hardware.SensorManager;
 import android.location.Location;
@@ -25,16 +20,15 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.ViewPager;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
+import android.widget.ToggleButton;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -47,22 +41,13 @@ import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import net.ruinnel.pedometer.BuildConfig;
 import net.ruinnel.pedometer.NetModule;
-import net.ruinnel.pedometer.PedometerService;
 import net.ruinnel.pedometer.R;
 import net.ruinnel.pedometer.Settings;
-import net.ruinnel.pedometer.api.NaverMapClient;
-import net.ruinnel.pedometer.api.bean.Error;
-import net.ruinnel.pedometer.api.bean.ReverseGeocode;
-import net.ruinnel.pedometer.db.DatabaseManager;
-import net.ruinnel.pedometer.db.bean.History;
 import net.ruinnel.pedometer.util.Log;
-import net.ruinnel.pedometer.util.Utils;
+import net.ruinnel.pedometer.view.adapter.ViewPagerAdapter;
 import net.ruinnel.pedometer.view.widget.BaseActivity;
 import okhttp3.Request;
 import okio.Buffer;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import javax.inject.Inject;
 import java.nio.charset.Charset;
@@ -73,7 +58,11 @@ import java.util.Set;
  * Created by ruinnel on 2017. 1. 11..
  */
 public class MainActivity extends BaseActivity
-  implements NetModule.RequestModifiedListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+  implements NetModule.RequestModifiedListener,
+  GoogleApiClient.ConnectionCallbacks,
+  GoogleApiClient.OnConnectionFailedListener,
+  ViewPager.OnPageChangeListener,
+  LocationListener {
   private static final String TAG = MainActivity.class.getSimpleName();
 
   public static final int INTERVAL = 10 * 60 * 1000;      // 10분
@@ -83,8 +72,12 @@ public class MainActivity extends BaseActivity
   private static final int MSG_LOCATION_TIMEOUT = 1;
   private static final int LOCATION_TIMEOUT = 10 * 1000; // 10 sec
 
+  // view pager index
+  private static final int IDX_MAIN = 0;
+  private static final int IDX_HISTORY = 1;
+
   @Inject
-  NaverMapClient mAppClient;
+  Settings mSettings;
 
   @Inject
   SensorManager mSensorManager;
@@ -92,38 +85,22 @@ public class MainActivity extends BaseActivity
   @Inject
   Gson mGson;
 
-  @Inject
-  DatabaseManager mDbManager;
+  @BindView(R.id.main_viewpager)
+  ViewPager mPager;
 
-  @BindView(R.id.txt_main)
-  TextView mTxtView;
+  @BindView(R.id.tab_main)
+  ToggleButton mBtnMain;
 
-  @BindView(R.id.btn_toggle)
-  Button mBtnToggle;
+  @BindView(R.id.tab_history)
+  ToggleButton mBtnHistory;
+
+  private ViewPagerAdapter mAdapter;
 
   private GoogleApiClient mGoogleApiClient;
-  private boolean mIsApiConnected;
 
   private Location mLastLocation;
 
-  private boolean mIsPedometerServiceBounding;
-  private Intent mServiceIntent;
-  private ServiceConnection mPedometerServiceConnection;
-  private PedometerService mPedometerService;
-
   private Handler mHandler;
-
-  private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-    @Override
-    public void onReceive(Context context, Intent intent) {
-      String action = intent.getAction();
-      if (Settings.ACTION_STEP.equals(action)) {
-        History history = mDbManager.todayHistory();
-        int todaySteps = (history != null ? history.steps : 0);
-        mTxtView.setText(String.format("Steps : %d", todaySteps));
-      }
-    }
-  };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -136,10 +113,19 @@ public class MainActivity extends BaseActivity
       mApp.setRequestModifiedListener(this);
     }
 
-    mIsPedometerServiceBounding = false;
-    startPedometerService();
+    mPager = (ViewPager) findViewById(R.id.main_viewpager);
+    mAdapter = new ViewPagerAdapter(this, getSupportFragmentManager());
+    mPager.setAdapter(mAdapter);
+    mPager.addOnPageChangeListener(this);
+    refreshTab(IDX_MAIN);
+  }
 
-    refreshButton();
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    if (mPager != null) {
+      mPager.removeOnPageChangeListener(this);
+    }
   }
 
   @Override
@@ -162,59 +148,12 @@ public class MainActivity extends BaseActivity
   @Override
   protected void onResume() {
     super.onResume();
-
-    IntentFilter filter = new IntentFilter(Settings.ACTION_STEP);
-    LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, filter);
   }
 
   @Override
   protected void onPause() {
     super.onPause();
-    try {
-      LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
-    } catch (Exception e) {
-
-    }
   }
-
-  private void refreshButton() {
-    if (mSettings.isStarted()) {
-      mBtnToggle.setText(R.string.stop);
-    } else {
-      mBtnToggle.setText(R.string.start);
-    }
-  }
-
-  public void startPedometerService() {
-    if (mIsPedometerServiceBounding) {
-      return;
-    }
-
-    mPedometerServiceConnection = new ServiceConnection() {
-      public void onServiceConnected(ComponentName className, IBinder service) {
-        mPedometerService = ((PedometerService.PedometerServiceBinder) service).getService();
-      }
-
-      public void onServiceDisconnected(ComponentName className) {}
-    };
-
-    mServiceIntent = new Intent(this, PedometerService.class);
-    if (!Utils.isServiceRunning(getApplicationContext(), PedometerService.class)) {
-      startService(mServiceIntent);
-    }
-
-    mIsPedometerServiceBounding = true;
-    bindService(mServiceIntent, mPedometerServiceConnection, Context.BIND_AUTO_CREATE);
-  }
-
-  public void stopPedometerService() {
-    if (mIsPedometerServiceBounding && mPedometerServiceConnection != null) {
-      mIsPedometerServiceBounding = false;
-      unbindService(mPedometerServiceConnection);
-      stopService(mServiceIntent);
-    }
-  }
-
 
   public boolean checkPermission() {
     boolean permitted = false;
@@ -266,28 +205,6 @@ public class MainActivity extends BaseActivity
         showSnackbar(R.string.need_location_permission);
       }
     }).show();
-  }
-
-  private void requestReverseGeocode(double lat, double lng) {
-    Call<ReverseGeocode> call = mAppClient.reverseGeocode(String.format("%f,%f", lng, lat));
-    call.enqueue(new Callback<ReverseGeocode>() {
-      @Override
-      public void onResponse(Call<ReverseGeocode> call, Response<ReverseGeocode> response) {
-        if (response.isSuccessful()) {
-          ReverseGeocode.Item item = response.body().result.getFirstItem();
-          showSnackbar(item.address);
-          Log.i(TAG, "response = " + response.body());
-        } else {
-          Error error = parseErrorBody(response.errorBody());
-          showSnackbar(error.errorMessage);
-        }
-      }
-
-      @Override
-      public void onFailure(Call<ReverseGeocode> call, Throwable t) {
-        showSnackbar(R.string.msg_network_error);
-      }
-    });
   }
 
   @Override
@@ -356,7 +273,6 @@ public class MainActivity extends BaseActivity
       return;
     }
 
-    mIsApiConnected = true;
     mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
     if (mLastLocation == null) {
@@ -372,7 +288,9 @@ public class MainActivity extends BaseActivity
       public boolean handleMessage(Message message) {
         if (message.what == MSG_LOCATION_TIMEOUT) {
           if (mLastLocation != null) {
-            requestReverseGeocode(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+            Intent broadcast = new Intent(Settings.ACTION_FIND_LOCATION);
+            broadcast.putExtra(Settings.EXTRA_LOCATION, mLastLocation);
+            LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(broadcast);
           } else {
             // TODO
             showSnackbar(R.string.location_not_found);
@@ -431,7 +349,9 @@ public class MainActivity extends BaseActivity
 
   @Override
   public void onLocationChanged(Location location) {
-    requestReverseGeocode(location.getLatitude(), location.getLongitude());
+    Intent broadcast = new Intent(Settings.ACTION_FIND_LOCATION);
+    broadcast.putExtra(Settings.EXTRA_LOCATION, location);
+    LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
   }
 
   @Override
@@ -454,16 +374,36 @@ public class MainActivity extends BaseActivity
     this.startActivity(intent);
   }
 
-  @OnClick(R.id.btn_toggle)
-  public void onToggle(View view) {
-    if (mPedometerService != null) {
-      if (!mSettings.isStarted()) {
-        mPedometerService.startPedometer();
-      } else {
-        mPedometerService.stopPedometer();
-      }
-    }
+  @Override
+  public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-    refreshButton();
+  }
+
+  @Override
+  public void onPageSelected(int position) {
+    refreshTab(position);
+  }
+
+  @Override
+  public void onPageScrollStateChanged(int state) {}
+
+  private void refreshTab(int position) {
+    mBtnMain.setChecked(false);
+    mBtnHistory.setChecked(false);
+    if (position == IDX_MAIN) {
+      mBtnMain.setChecked(true);
+    } else {
+      mBtnHistory.setChecked(true);
+    }
+  }
+
+  @OnClick(R.id.tab_main)
+  public void onClickMainTab(View view) {
+    mPager.setCurrentItem(IDX_MAIN);
+  }
+
+  @OnClick(R.id.tab_history)
+  public void onClickHistoryTab(View view) {
+    mPager.setCurrentItem(IDX_HISTORY);
   }
 }

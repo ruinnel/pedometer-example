@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Filename	: frag_main.xml
+  ~ Comment 	:
+  ~ History	: 2017/01/12, ruinnel, Create
+  ~
+  ~ Version	: 1.0
+  ~ Author   : Copyright (c) 2017 by ruinnel. All Rights Reserved.
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:paddingTop="16dp"
+  android:paddingLeft="16dp"
+  android:paddingRight="16dp"
+  android:paddingBottom="16dp">
+
+  <!-- pedometer data -->
+  <LinearLayout
+    android:id="@+id/layout_pedometer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginTop="20dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:gravity="center_vertical"
+      android:layout_alignParentTop="true">
+
+      <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/foot" />
+
+      <TextView
+        android:id="@+id/txt_steps"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="70sp"
+        android:textStyle="bold"
+        android:gravity="right|center_vertical" />
+    </LinearLayout>
+
+    <TextView
+      android:id="@+id/txt_distance"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:gravity="right"
+      android:text="@string/distance_unknown"
+      android:textSize="50sp"
+      android:layout_marginTop="5dp" />
+  </LinearLayout>
+
+  <!-- location -->
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_below="@id/layout_pedometer"
+    android:gravity="center_horizontal"
+    android:layout_marginTop="30dp">
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/current_location"
+      android:textSize="20sp" />
+
+    <TextView
+      android:id="@+id/txt_address"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/current_location_unknown"
+      android:textSize="20sp" />
+  </LinearLayout>
+
+  <!-- bottom button -->
+  <ToggleButton
+    android:id="@+id/btn_toggle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:textOff="@string/start"
+    android:textOn="@string/stop"
+    style="@style/button" />
+</RelativeLayout>

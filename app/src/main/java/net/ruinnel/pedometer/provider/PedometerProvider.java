@@ -49,6 +49,7 @@ public class PedometerProvider extends ContentProvider {
       return 0;
     }
   }
+
   @Override
   public Uri insert(Uri uri, ContentValues values) {
     String path = uri.getPath();

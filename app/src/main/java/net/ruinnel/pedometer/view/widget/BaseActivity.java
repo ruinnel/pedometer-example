@@ -15,16 +15,8 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import net.ruinnel.pedometer.Pedometer;
 import net.ruinnel.pedometer.R;
-import net.ruinnel.pedometer.Settings;
-import net.ruinnel.pedometer.api.bean.Error;
-import net.ruinnel.pedometer.util.Log;
-import okhttp3.ResponseBody;
-
-import java.lang.reflect.Type;
 
 public class BaseActivity extends AppCompatActivity {
   private static final String TAG = BaseActivity.class.getSimpleName();
@@ -34,7 +26,6 @@ public class BaseActivity extends AppCompatActivity {
   }
 
   protected Pedometer mApp;
-  protected Settings mSettings;
   protected Snackbar mSnackbar;
 
   protected Fragment mCurrentFragment;
@@ -82,7 +73,6 @@ public class BaseActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     mApp = (Pedometer) getApplication();
-    mSettings = Settings.getInstance(this);
 
     if (savedInstanceState != null) {
       // TODO recover saved data.
@@ -101,17 +91,6 @@ public class BaseActivity extends AppCompatActivity {
       mListener.onBack();
     } else {
       super.onBackPressed();
-    }
-  }
-
-  public Error parseErrorBody(ResponseBody errorBody) {
-    try {
-      Gson gson = new Gson();
-      Type type = new TypeToken<Error>() {}.getType();
-      return gson.fromJson(errorBody.string(), type);
-    } catch (Exception e) {
-      Log.w(TAG, "parseErrorBody fail !! ", e);
-      return null;
     }
   }
 }

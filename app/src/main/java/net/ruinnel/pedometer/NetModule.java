@@ -37,6 +37,7 @@ public class NetModule {
   }
 
   private RequestModifiedListener mRequestModifiedListener;
+
   // Constructor needs one parameter to instantiate.
   public NetModule(RequestModifiedListener listener) {
     mRequestModifiedListener = listener;

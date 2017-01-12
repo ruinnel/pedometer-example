@@ -9,6 +9,14 @@
   <string name="start">"START"</string>
   <string name="stop">"STOP"</string>
 
+  <string name="tab_main">"만보기"</string>
+  <string name="tab_history">"만보기 기록"</string>
+
+  <string name="current_location">"현재 위치"</string>
+  <string name="current_location_unknown">"알수 없음"</string>
+  <string name="distance_unknown">"?km"</string>
+  <string name="format_distance" formatted="false">"%.1f km"</string>
+
   <string name="msg_network_error">"네트워크 연결 중 문제가 발생하였습니다.\n잠시후 다시 시도해 주세요."</string>
   <string name="need_location_permission">"위치 정보 권한이 필요합니다."</string>
   <!--<string name="google_play_service_not_found">"Google Play 서비스를 이용할 수 없습니다."</string>-->

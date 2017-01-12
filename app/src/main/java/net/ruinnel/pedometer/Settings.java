@@ -23,10 +23,17 @@ public class Settings {
   public static final String CLIENT_SECRET = "JDt6XV4OHR";
 
   public static final String ACTION_STEP = "net.ruinnel.pedometer.ACTION_STEP";
+  public static final String ACTION_FIND_LOCATION = "net.ruinnel.pedometer.ACTION_FIND_LOCATION";
+  public static final String EXTRA_LOCATION = "location";
+
+  // 보폭 default(남: 66, 여: 61) -> 중간값 사용
+  private static final int STRIDE_DEFAULT = 63;
 
   // keys
   private static final String KEY_IS_STARTED = "is_started";
   private static final String KEY_PAUSE_STEPS = "pause_steps";
+  private static final String KEY_STRIDES = "strides";
+  private static final String KEY_IS_STRIDES_SETTED = "is_strides_setted";
 
   private final Context mContext;
   private static Settings mInstance;
@@ -42,6 +49,7 @@ public class Settings {
   public String getNaverBaseURL() {
     return BASE_URL;
   }
+
   public String getNaverClientId() {
     return CLIENT_ID;
   }
@@ -110,5 +118,25 @@ public class Settings {
 
   public int getPauseSteps() {
     return mPref.getInt(KEY_PAUSE_STEPS, 0);
+  }
+
+  public void setStrides(int strides) {
+    SharedPreferences.Editor editor = mPref.edit();
+    editor.putInt(KEY_STRIDES, strides);
+    editor.commit();
+  }
+
+  public int getStrides() {
+    return mPref.getInt(KEY_STRIDES, STRIDE_DEFAULT);
+  }
+
+  public void setStridesSetted(boolean setted) {
+    SharedPreferences.Editor editor = mPref.edit();
+    editor.putBoolean(KEY_IS_STRIDES_SETTED, setted);
+    editor.commit();
+  }
+
+  public boolean isStridesSetted() {
+    return mPref.getBoolean(KEY_IS_STRIDES_SETTED, false);
   }
 }

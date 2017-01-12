@@ -43,4 +43,12 @@ public class Utils {
     cal.set(Calendar.MILLISECOND, 0);
     return cal.getTime();
   }
+
+  public static double getDistance(int steps, int strides) {
+    double distance = (steps * (strides / 100.0) / 1000.0);
+    if (distance < 0.1) { // 0.0km 방지.
+      distance = 0.1;
+    }
+    return distance;
+  }
 }
