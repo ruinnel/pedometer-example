@@ -32,8 +32,8 @@ import javax.inject.Inject;
 public class PedometerService extends Service implements StepListener {
   private static final String TAG = PedometerService.class.getSimpleName();
 
-  //private static final int STEP_COUNTER_LATENCY = 5 * 60 * 1000 * 1000; // 5 min // microsecond
-  private static final int STEP_COUNTER_LATENCY = 5 * 1000 * 1000; // 5 sec // microsecond
+  private static final int STEP_COUNTER_LATENCY = 1 * 60 * 1000 * 1000; // 1 min // microsecond
+//  private static final int STEP_COUNTER_LATENCY = 5 * 1000 * 1000; // 5 sec // microsecond
 
   public class PedometerServiceBinder extends Binder {
     public PedometerService getService() {

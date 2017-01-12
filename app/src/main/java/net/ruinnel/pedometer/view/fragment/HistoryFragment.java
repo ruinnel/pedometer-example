@@ -66,10 +66,15 @@ public class HistoryFragment extends BaseFragment {
       String action = intent.getAction();
       if (Settings.ACTION_STEP.equals(action)) {
         // 오늘 데이터만 변경
-        if (mHistories != null && mHistories.size() > 0) {
-          History history = mDbManager.todayHistory();
-          mHistories.get(0).steps = history.steps;
-          mAdapter.notifyDataSetChanged();
+        History today = mDbManager.todayHistory();
+        if (mHistories != null && mHistories.size() > 0 && today != null) {
+          for (History history : mHistories) {
+            if (history.day.getTime() == today.day.getTime()) {
+              history.steps = today.steps;
+              mAdapter.notifyDataSetChanged();
+              break;
+            }
+          }
         }
       } else if (Settings.ACTION_STRIDES_CHANGED.equals(action)) {
         mAdapter.setStrides(mSettings.getStrides());
