@@ -1,6 +1,5 @@
 # Pedometer Example
-
-[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+ - 만보계 어플(코딩 과제 제출용)
 
 # Dependencies
   * [Guava](https://github.com/google/guava) - Google Core Libraries for Java
